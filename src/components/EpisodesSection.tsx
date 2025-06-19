@@ -189,7 +189,7 @@ export default function EpisodesSection() {
         return <Play className="h-16 w-16" />
     }
 
-    // Loading apenas na primeira carga
+    // Loading apenas no primeiro carregamento
     if (isLoading && Object.keys(episodeData).length === 0) {
         return (
             <div className="space-y-6">
@@ -261,16 +261,18 @@ export default function EpisodesSection() {
                     <Button
                         variant={showFavorites ? "default" : "outline"}
                         onClick={handleShowFavorites}
+                        className="flex items-center gap-2"
                     >
                         <Heart className="h-4 w-4 mr-2" />
-                        Favorites
+                        <span className="inline">Favorites</span>
                     </Button>
                     <Button
                         variant={showWatched ? "default" : "outline"}
                         onClick={handleShowWatched}
+                        className="flex items-center gap-2"
                     >
                         <Eye className="h-4 w-4 mr-2" />
-                        Watched
+                        <span className="inline">Watched</span>
                     </Button>
                 </div>
             </div>
@@ -314,7 +316,7 @@ export default function EpisodesSection() {
                             )
                         }}
                         onPageChange={handlePageChange}
-                        
+
                     />
                 </div>
             )}
@@ -330,7 +332,7 @@ export default function EpisodesSection() {
                                     <p className="text-gray-600">{selectedEpisode.episode}</p>
                                     <p className="text-sm text-gray-500">Air Date: {selectedEpisode.air_date}</p>
                                 </div>
-                                <Button variant="outline" onClick={closeDetails}>
+                                <Button variant="outline" onClick={closeDetails} className='cursor-pointer'>
                                     ✕
                                 </Button>
                             </div>
@@ -346,7 +348,7 @@ export default function EpisodesSection() {
                                                 className="w-12 h-12 rounded-full"
                                             />
                                             <div>
-                                                <p className="font-medium">{character.name}</p>
+                                                <p className="font-medium text-gray-600">{character.name}</p>
                                                 <p className="text-sm text-gray-600">{character.species}</p>
                                                 <div className="flex items-center gap-1">
                                                     <div className={`w-2 h-2 rounded-full ${character.status === 'Alive' ? 'bg-green-500' :
