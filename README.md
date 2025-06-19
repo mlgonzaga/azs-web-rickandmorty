@@ -18,6 +18,8 @@ Acesse a aplicação rodando em produção:
 ## Como rodar localmente
 
 1. **Clone o repositório:**
+OBS: O arquivo .env está no repositorio apenas porque só há a url da API Graphql nele, caso contrário não seria enviado junto com o projeto.
+
    ```bash
    git clone https://github.com/mlgonzaga/azs-web-rickandmorty.git
    cd azs-web-rickandmorty
