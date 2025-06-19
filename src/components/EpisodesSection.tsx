@@ -10,6 +10,13 @@ import type { Episode } from '@/interfaces/episodes'
 import PaginationComponent from './PaginationComponent'
 import CardEpisode from './CardEpisode'
 import { useGetEpisodesQuery } from '@/store/services/episodes-api'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from './ui/dialog'
 
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -118,9 +125,7 @@ export default function EpisodesSection() {
         dispatch(setShowWatched(!showWatched))
     }
 
-    const closeDetails = () => {
-        setSelectedEpisode(null)
-    }
+
 
     const handlePageChange = (newPage: number) => {
         // Atualiza o parâmetro na URL
@@ -293,6 +298,7 @@ export default function EpisodesSection() {
                     <CardEpisode
                         key={episode.id}
                         episode={episode}
+                        onShowDetails={() => setSelectedEpisode(episode)}
                     />
                 ))}
             </div>
@@ -323,38 +329,39 @@ export default function EpisodesSection() {
 
             {/* Episode Details Modal */}
             {selectedEpisode && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <Dialog open={!!selectedEpisode} onOpenChange={open => !open && setSelectedEpisode(null)}>
+                    <DialogContent className="bg-white rounded-lg  max-w-5xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h2 className="text-2xl font-bold">{selectedEpisode.name}</h2>
-                                    <p className="text-gray-600">{selectedEpisode.episode}</p>
-                                    <p className="text-sm text-gray-500">Air Date: {selectedEpisode.air_date}</p>
+                            <DialogHeader>
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <DialogTitle className="text-2xl font-bold">{selectedEpisode.name}</DialogTitle>
+                                        <DialogDescription>
+                                            <p className="text-gray-600">{selectedEpisode.episode}</p>
+                                            <p className="text-sm text-gray-500">Air Date: {selectedEpisode.air_date}</p>
+                                        </DialogDescription>
+                                    </div>
+                               
                                 </div>
-                                <Button variant="outline" onClick={closeDetails} className='cursor-pointer'>
-                                    ✕
-                                </Button>
-                            </div>
-
-                            <div className="mb-6">
+                            </DialogHeader>
+                            <div className="break-all">
                                 <h3 className="text-lg font-semibold mb-3">Characters ({selectedEpisode.characters.length})</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {selectedEpisode.characters.map((character) => (
-                                        <div key={character.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                                        <div key={character.id} className="flex flex-col items-center gap-3 p-3 justify-center border rounded-lg">
                                             <img
                                                 src={character.image}
                                                 alt={character.name}
                                                 className="w-12 h-12 rounded-full"
                                             />
-                                            <div>
-                                                <p className="font-medium text-gray-600">{character.name}</p>
-                                                <p className="text-sm text-gray-600">{character.species}</p>
-                                                <div className="flex items-center gap-1">
+                                            <div className='break-all'>
+                                                <p className="font-medium text-gray-600 break-all text-center" title={character.name}>{character.name}</p>
+                                                <p className="text-sm text-gray-600 text-center">{character.species}</p>
+                                                <div className="flex items-center justify-center gap-1 ">
                                                     <div className={`w-2 h-2 rounded-full ${character.status === 'Alive' ? 'bg-green-500' :
                                                         character.status === 'Dead' ? 'bg-red-500' : 'bg-gray-500'
                                                         }`}></div>
-                                                    <span className="text-xs text-gray-500">{character.status}</span>
+                                                    <span className="text-xs text-gray-500 text-center">{character.status}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -362,8 +369,8 @@ export default function EpisodesSection() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </DialogContent>
+                </Dialog>
             )}
         </div>
     )

@@ -1,4 +1,3 @@
-
 import {
     Card,
     CardContent,
@@ -27,9 +26,10 @@ import {
 
 interface EpisodeProps {
     episode: Episode
+    onShowDetails?: () => void
 }
 
-export default function CardEpisode({ episode }: EpisodeProps) {
+export default function CardEpisode({ episode, onShowDetails }: EpisodeProps) {
     const dispatch = useDispatch()
     const [showCharactersModal, setShowCharactersModal] = useState(false)
     const episodeData = useAppSelector((state) => state.episodes.episodeData[episode.id])
@@ -116,7 +116,7 @@ export default function CardEpisode({ episode }: EpisodeProps) {
 
     return (
         <>
-            <Card className='min-w-[280px] sm:w-full w-full rounded-2xl hover:shadow-lg transition-shadow overflow-hidden flex flex-col'>
+            <Card className='min-w-[300px] sm:w-full w-full rounded-2xl hover:shadow-lg transition-shadow overflow-hidden flex flex-col'>
                 {/* Episode Image */}
                 <div className="relative group">
                     <img
@@ -202,12 +202,12 @@ export default function CardEpisode({ episode }: EpisodeProps) {
                     </div>
                 </CardContent>
 
-                <CardFooter className="flex justify-center gap-2 mt-auto">
+                <CardFooter className="flex flex-col justify-center gap-2 mt-auto w-full">
                     <Button
                         variant={isWatched ? "default" : "outline"}
                         size="sm"
                         onClick={handleToggleWatched}
-                        className="flex-1"
+                        className='w-2/3'
                     >
                         <Eye className="h-4 w-4 mr-2" />
                         {isWatched ? "Watched" : "Mark as Watched"}
@@ -216,10 +216,19 @@ export default function CardEpisode({ episode }: EpisodeProps) {
                         variant={isFavorite ? "default" : "outline"}
                         size="sm"
                         onClick={handleToggleFavorite}
-                        className="flex-1"
+                        className='w-2/3'
                     >
                         <Heart className="h-4 w-4 mr-2" />
                         {isFavorite ? "Favorited" : "Favorite"}
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onShowDetails}
+                        className='w-2/3'
+
+                    >
+                        Details
                     </Button>
                 </CardFooter>
             </Card>
@@ -235,15 +244,15 @@ export default function CardEpisode({ episode }: EpisodeProps) {
                     </DialogHeader>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {episode.characters.map((character) => (
-                            <div key={character.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                            <div key={character.id} className="flex flex-col  items-center gap-3 p-3 border rounded-lg">
                                 <img
                                     src={character.image}
                                     alt={character.name}
                                     className="w-12 h-12 rounded-full"
                                 />
-                                <div>
-                                    <p className="font-medium text-sm ">{character.name}</p>
-                                    <p className="text-xs text-gray-600">{character.species}</p>
+                                <div className='p-3'>
+                                    <p className="font-medium text-sm break-all">{character.name}</p>
+                                    <p className="text-xs text-gray-600 break-all">{character.species}</p>
                                     <div className="flex items-center gap-1">
                                         <div className={`w-2 h-2 rounded-full ${getStatusColor(character.status)}`}></div>
                                         <span className="text-xs text-gray-500">
