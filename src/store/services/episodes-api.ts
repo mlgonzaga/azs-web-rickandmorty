@@ -58,13 +58,7 @@ export const episodesApi = createApi({
           variables: { page },
         },
       }),
-      providesTags: (result, page) => 
-        result?.data?.episodes?.results 
-          ? [
-              ...result.data.episodes.results.map(({ id }) => ({ type: 'Episodes' as const, id })),
-              { type: 'Episodes', id: `page-${page}` }
-            ]
-          : [{ type: 'Episodes', id: `page-${page}` }],
+      providesTags: ['Episodes']
     }),
   }),
 })
