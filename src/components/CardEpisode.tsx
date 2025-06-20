@@ -13,8 +13,6 @@ import { updateEpisode } from '@/store/slices/episodeSlice'
 import { toast } from 'sonner'
 import type { Episode } from '@/interfaces/episodes'
 import { useAppSelector } from '@/store'
-import { format } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import { useState } from 'react'
 import {
     Dialog,
@@ -23,6 +21,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
+import { useFormatAirDate } from '@/hooks/useFormatAirDate'
 
 interface EpisodeProps {
     episode: Episode
@@ -65,13 +64,7 @@ export default function CardEpisode({ episode, onShowDetails }: EpisodeProps) {
         }
     }
 
-    const formatAirDate = (dateString: string) => {
-        try {
-            return format(new Date(dateString), 'dd/MM/yyyy', { locale: ptBR })
-        } catch {
-            return dateString
-        }
-    }
+    const formatAirDate = useFormatAirDate();
 
     // Criar collage de imagens dos personagens principais
     const getEpisodeImage = () => {
@@ -166,7 +159,7 @@ export default function CardEpisode({ episode, onShowDetails }: EpisodeProps) {
                     </div>
                     <CardTitle className="text-xl font-bold line-clamp-2">{episode.name}</CardTitle>
                     <CardDescription className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1">
+                        <div className="flex  items-center gap-1 ">
                             <Calendar className="h-4 w-4" />
                             <span>{formatAirDate(episode.air_date)}</span>
                         </div>

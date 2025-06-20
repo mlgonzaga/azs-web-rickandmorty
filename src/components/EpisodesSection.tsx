@@ -20,6 +20,7 @@ import {
 
 import { useNavigate } from 'react-router-dom'
 import { setCurrentPage as setCurrentPageGlobal } from '@/store/slices/pageSlice'
+import { useFormatAirDate } from '@/hooks/useFormatAirDate'
 
 
 export default function EpisodesSection() {
@@ -34,6 +35,7 @@ export default function EpisodesSection() {
     const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
     const [localSearchTerm, setLocalSearchTerm] = useState('')
     const navigate = useNavigate();
+    const formatAirDate = useFormatAirDate();
 
 
 
@@ -356,7 +358,7 @@ export default function EpisodesSection() {
                                         <DialogTitle className="text-2xl font-bold">{selectedEpisode.name}</DialogTitle>
                                         <DialogDescription>
                                             <p className="text-gray-600">{selectedEpisode.episode}</p>
-                                            <p className="text-sm text-gray-500">Air Date: {selectedEpisode.air_date}</p>
+                                            <p className="text-sm text-gray-500">Air Date: {formatAirDate(selectedEpisode.air_date)}</p>
                                         </DialogDescription>
                                     </div>
 
