@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { ptBR, enUS } from 'date-fns/locale'
+import { enUS } from 'date-fns/locale'
 
 export function useFormatAirDate() {
   return (dateString: string) => {
