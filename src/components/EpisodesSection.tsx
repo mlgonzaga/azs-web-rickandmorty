@@ -21,6 +21,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { setCurrentPage as setCurrentPageGlobal } from '@/store/slices/pageSlice'
 import { useFormatAirDate } from '@/hooks/useFormatAirDate'
+import ErrorMessage from './ui/ErrorMessage'
 
 
 export default function EpisodesSection() {
@@ -257,14 +258,7 @@ export default function EpisodesSection() {
     }
 
     if (error) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold text-red-600 mb-2">Error</h2>
-                    <p className="text-gray-600">An error occurred while fetching episodes</p>
-                </div>
-            </div>
-        )
+        return <ErrorMessage message="Ocorreu um erro ao buscar episódios." />
     }
 
     return (
