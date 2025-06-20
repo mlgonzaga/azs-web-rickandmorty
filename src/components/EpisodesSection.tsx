@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from '@/store'
-import { setPageEpisodes, setLoading, setError, setCurrentPage, initializePage } from '@/store/slices/episodeSlice'
+import { setPageEpisodes, setLoading, setError, initializePage } from '@/store/slices/episodeSlice'
 import { useEffect, useState } from 'react'
 import { Skeleton } from './ui/skeleton'
 import { Button } from './ui/button'
@@ -18,39 +18,43 @@ import {
     DialogDescription,
 } from './ui/dialog'
 
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { setCurrentPage as setCurrentPageGlobal } from '@/store/slices/pageSlice'
 
 
 export default function EpisodesSection() {
     const dispatch = useAppDispatch()
     const {
-        episodeData,
-        currentPageEpisodes,
-        showFavorites,
-        showWatched,
-        pagination
-    } = useAppSelector((state) => state.episodes)
+        episodeData = {},
+        currentPageEpisodes = [],
+        showFavorites = false,
+        showWatched = false,
+        pagination = { loadedPages: {}, currentPage: 1, totalPages: 1, totalEpisodes: 0, hasNextPage: false, hasPrevPage: false }
+    } = useAppSelector((state) => state.episodes || {})
     const [selectedEpisode, setSelectedEpisode] = useState<Episode | null>(null)
     const [localSearchTerm, setLocalSearchTerm] = useState('')
     const navigate = useNavigate();
 
 
-    const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
 
-    const page = Number(queryParams.get("page") ?? '1');
 
-    let initialPage = page
+    const pageGlobal = useAppSelector((state) => state.page?.currentPage ?? 1)
+
+    let initialPage = pageGlobal
 
 
     // Inicializar página do localStorage na primeira carga
     useEffect(() => {
-        // Se a página inicial do parâmetro for diferente da do redux, atualiza
-        if (pagination.currentPage !== initialPage) {
-            dispatch(setCurrentPage(initialPage));
+        // Se a página inicial do parâmetro for diferente da do redux global, atualiza
+        if (pageGlobal !== initialPage) {
+            dispatch(setCurrentPageGlobal(initialPage));
         }
-        dispatch(initializePage())
-    }, [dispatch, initialPage])
+        // Só limpa se não houver episódios carregados para a página
+        const pageEpisodeIds = pagination.loadedPages[initialPage];
+        if (!pageEpisodeIds || pageEpisodeIds.length === 0) {
+            dispatch(initializePage());
+        }
+    }, [dispatch, initialPage, pageGlobal]);
 
     // Reconstruir episódios da página atual se ela está em cache
     useEffect(() => {
@@ -78,7 +82,9 @@ export default function EpisodesSection() {
         }
     }, [pagination.currentPage, currentPageEpisodes.length, episodeData, pagination, dispatch])
 
-    const { data, isLoading, error } = useGetEpisodesQuery(pagination.currentPage, {
+    // Requisição API Graphql
+
+    const { data, isLoading, error } = useGetEpisodesQuery(pageGlobal, {
         selectFromResult: ({ data, isLoading, error }) => {
             return {
                 data: data || null,
@@ -95,23 +101,43 @@ export default function EpisodesSection() {
         }
     }, [isLoading, dispatch])
 
-    // Processar dados da API
+    // Processar dados da API ou do localStorage
     useEffect(() => {
+        // Primeiro tenta pegar do localStorage
+        const localKey = `episodes_page_${pageGlobal}`;
+        const stored = localStorage.getItem(localKey);
+        if (stored) {
+            try {
+                const episodes = JSON.parse(stored);
+                if (Array.isArray(episodes) && episodes.length > 0) {
+                    dispatch(setPageEpisodes({
+                        episodes,
+                        info: {
+                            count: pagination.totalEpisodes,
+                            pages: pagination.totalPages,
+                            next: pagination.hasNextPage ? pageGlobal + 1 : null,
+                            prev: pagination.hasPrevPage ? pageGlobal - 1 : null
+                        },
+                        page: pageGlobal
+                    }));
+                    return; // Não processa a API
+                }
+            } catch { }
+        }
+        // Se não tem no localStorage, processa a resposta da API normalmente
         if (error) {
             dispatch(setError('An error occurred while fetching episodes'))
             return
         }
-
-        // Só processar se temos dados e a página não está em cache
         if (data?.data?.episodes && !isLoading) {
             const payload = {
                 episodes: data.data.episodes.results,
                 info: data.data.episodes.info,
-                page: pagination.currentPage
+                page: pageGlobal
             }
             dispatch(setPageEpisodes(payload))
         }
-    }, [data, error, dispatch, pagination.currentPage, isLoading])
+    }, [data, error, dispatch, pageGlobal, isLoading])
 
     const handleSearch = (value: string) => {
         setLocalSearchTerm(value)
@@ -130,15 +156,7 @@ export default function EpisodesSection() {
     const handlePageChange = (newPage: number) => {
         // Atualiza o parâmetro na URL
         navigate(`/?page=${newPage}`);
-        dispatch(setCurrentPage(newPage));
-        if (data?.data?.episodes && !isLoading) {
-            const payload = {
-                episodes: data.data.episodes.results,
-                info: data.data.episodes.info,
-                page: newPage
-            }
-            dispatch(setPageEpisodes(payload))
-        }
+        dispatch(setCurrentPageGlobal(newPage));
     }
 
     // Filtrar episódios baseado no contexto
@@ -314,6 +332,7 @@ export default function EpisodesSection() {
                     <PaginationComponent
                         pagination={{
                             ...pagination,
+                            currentPage: pageGlobal,
                             loadedPages: Object.fromEntries(
                                 Object.entries(pagination.loadedPages).map(([page, ids]) => [
                                     page,
@@ -322,7 +341,6 @@ export default function EpisodesSection() {
                             )
                         }}
                         onPageChange={handlePageChange}
-
                     />
                 </div>
             )}
@@ -341,7 +359,7 @@ export default function EpisodesSection() {
                                             <p className="text-sm text-gray-500">Air Date: {selectedEpisode.air_date}</p>
                                         </DialogDescription>
                                     </div>
-                               
+
                                 </div>
                             </DialogHeader>
                             <div className="break-all">

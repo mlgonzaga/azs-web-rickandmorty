@@ -8,7 +8,7 @@ interface PaginationState {
   totalEpisodes: number
   hasNextPage: boolean
   hasPrevPage: boolean
-  loadedPages: Record<number, string[]> // page -> array of episode IDs (string)
+  loadedPages: Record<number, string[]>
 }
 
 interface EpisodesState {
@@ -42,44 +42,40 @@ const episodeSlice = createSlice({
   name: 'episodes',
   initialState,
   reducers: {
-    setLoading(state, action: PayloadAction<boolean>) {
-      state.loading = action.payload
-    },
-    setError(state, action: PayloadAction<string | null>) {
-      state.error = action.payload
-    },
-    setCurrentPage(state, action: PayloadAction<number>) {
-      state.pagination.currentPage = action.payload
-      // Ao mudar de página, limpa os episódios da página atual
-      state.currentPageEpisodes = []
-    },
+    /**
+     * Salva/adiciona episódios de uma página no estado
+     */
     setPageEpisodes(state, action: PayloadAction<{ episodes: Episode[]; info: any; page: number }>) {
       const { episodes, info, page } = action.payload
-      // Atualiza dados dos episódios
+      // Atualiza dados dos episódios, preservando favorite e watched
       episodes.forEach((ep: Episode) => {
-        state.episodeData[String(ep.id)] = ep
+        const prev = state.episodeData[String(ep.id)] as Partial<Episode> || {};
+        state.episodeData[String(ep.id)] = {
+          ...ep,
+          favorite: prev.favorite ?? false,
+          watched: prev.watched ?? false,
+        }
       })
       // Atualiza lista de IDs da página
       const ids = episodes.map((ep: Episode) => String(ep.id))
       state.pagination.loadedPages[page] = ids
-      state.currentPageEpisodes = episodes
+      state.currentPageEpisodes = episodes.map((ep: Episode) => {
+        const prev = state.episodeData[String(ep.id)] as Partial<Episode> || {};
+        return {
+          ...ep,
+          favorite: prev.favorite ?? false,
+          watched: prev.watched ?? false,
+        }
+      })
       // Atualiza info de paginação
       state.pagination.totalPages = info.pages
       state.pagination.totalEpisodes = info.count
       state.pagination.hasNextPage = !!info.next
       state.pagination.hasPrevPage = !!info.prev
     },
-    initializePage(state) {
-      // Apenas reseta os episódios da página atual
-      state.currentPageEpisodes = []
-    },
-    setShowFavorites(state, action: PayloadAction<boolean>) {
-      state.showFavorites = action.payload
-    },
-    setShowWatched(state, action: PayloadAction<boolean>) {
-      state.showWatched = action.payload
-    },
-    // Atualização de episódio (favorito/assistido)
+    /**
+     * Atualiza informações de um episódio já existente (favorito, assistido, etc)
+     */
     updateEpisode(state, action: PayloadAction<Partial<Episode> & { id: string }>) {
       const id = String(action.payload.id)
       const prev = state.episodeData[id]
@@ -108,17 +104,33 @@ const episodeSlice = createSlice({
         }
       }
     },
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.loading = action.payload
+    },
+    setError(state, action: PayloadAction<string | null>) {
+      state.error = action.payload
+    },
+    setShowFavorites(state, action: PayloadAction<boolean>) {
+      state.showFavorites = action.payload
+    },
+    setShowWatched(state, action: PayloadAction<boolean>) {
+      state.showWatched = action.payload
+    },
+    initializePage(state) {
+      // Apenas reseta os episódios da página atual
+      state.currentPageEpisodes = []
+    },
   },
 })
 
 export const {
   setLoading,
   setError,
-  setCurrentPage,
   setPageEpisodes,
-  initializePage,
+  updateEpisode,
   setShowFavorites,
   setShowWatched,
-  updateEpisode,
+  initializePage,
 } = episodeSlice.actions
+
 export default episodeSlice.reducer
