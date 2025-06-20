@@ -5,19 +5,13 @@ interface PageState {
 }
 
 const getInitialPage = (): number => {
-  // Tenta pegar da URL
+  // Prioriza o parâmetro da URL
   const params = new URLSearchParams(window.location.search)
   const urlPage = params.get('page')
   if (urlPage && !isNaN(Number(urlPage))) {
-    localStorage.setItem('currentPage', urlPage)
     return Number(urlPage)
   }
-  // Tenta pegar do localStorage
-  const stored = localStorage.getItem('currentPage')
-  if (stored && !isNaN(Number(stored))) {
-    return Number(stored)
-  }
-  // Default para 1
+  // Se não tem parâmetro, sempre começa na página 1
   localStorage.setItem('currentPage', '1')
   return 1
 }
