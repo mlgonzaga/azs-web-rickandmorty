@@ -299,7 +299,7 @@ export default function EpisodesSection() {
             {/* Episodes Info */}
             {!showFavorites && !showWatched && !localSearchTerm && (
                 <div className="text-center text-gray-600">
-                    <p>Página {pagination.currentPage} de {pagination.totalPages} | {currentPageEpisodes.length} episódios</p>
+                   
                     {isLoading && !isLoading && (
                         <p className="text-sm text-blue-600 mt-1">Carregando página {pagination.currentPage}...</p>
                     )}
